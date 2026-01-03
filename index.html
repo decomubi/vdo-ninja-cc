@@ -1,0 +1,1309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VDO.Ninja Control Center</title>
+    <style>
+        :root {
+            --primary: #2563eb;
+            --primary-hover: #1d4ed8;
+            --bg-color: #f8fafc;
+            --card-bg: #ffffff;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --border: #e2e8f0;
+            --error: #dc2626;
+            --success: #16a34a;
+            --input-bg: #ffffff;
+            --action-btn-bg: #f1f5f9;
+            --action-btn-border: #cbd5e1;
+            --modal-bg: #ffffff;
+        }
+
+        /* Dark Mode Variables */
+        [data-theme="dark"] {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border: #334155;
+            --input-bg: #334155;
+            --action-btn-bg: #334155;
+            --action-btn-border: #475569;
+            --modal-bg: #1e293b;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        /* Navigation Bar */
+        .navbar {
+            background: var(--card-bg);
+            border-bottom: 1px solid var(--border);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 50;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+            transition: background-color 0.3s, border-color 0.3s;
+        }
+
+        .brand {
+            font-weight: 800;
+            font-size: 1.25rem;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .nav-btn {
+            padding: 0.5rem 1rem;
+            border: 1px solid transparent;
+            background: transparent;
+            color: var(--text-muted);
+            cursor: pointer;
+            font-weight: 600;
+            border-radius: 6px;
+            transition: all 0.2s;
+            font-size: 0.9rem;
+        }
+
+        .nav-btn:hover {
+            background: rgba(37, 99, 235, 0.1);
+            color: var(--text-main);
+        }
+
+        .nav-btn.active {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+        
+        /* Theme Toggle Button */
+        #theme-toggle {
+            font-size: 1.2rem;
+            padding: 0.4rem 0.8rem;
+            margin-left: 0.5rem;
+            border-radius: 50%;
+            border: 1px solid var(--border);
+            background: var(--card-bg);
+            color: var(--text-main);
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        #theme-toggle:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+
+        /* Sub-navigation (Language Toggles) */
+        .sub-nav {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1.5rem;
+            overflow-x: auto;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border);
+            padding-top: 1rem;
+        }
+
+        .sub-nav-btn {
+            padding: 0.4rem 0.8rem;
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            white-space: nowrap;
+            transition: all 0.2s;
+            color: var(--text-muted);
+        }
+
+        .sub-nav-btn:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+            transform: translateY(-1px);
+        }
+
+        .sub-nav-btn.active {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+            box-shadow: 0 2px 4px rgba(37, 99, 235, 0.2);
+        }
+
+        /* Main Container */
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            width: 100%;
+            padding: 0 2rem 2rem 2rem;
+            flex: 1;
+        }
+
+        /* Admin Panel Styles */
+        .admin-panel {
+            display: none;
+            background: var(--card-bg);
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            margin-top: 2rem;
+        }
+
+        .upload-group {
+            border: 2px dashed var(--border);
+            padding: 1.5rem;
+            border-radius: 8px;
+            text-align: center;
+            margin-bottom: 2rem;
+            background: rgba(37, 99, 235, 0.05);
+        }
+
+        .links-section {
+            background: rgba(22, 163, 74, 0.1);
+            border: 1px solid var(--success);
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin-bottom: 2rem;
+        }
+        
+        [data-theme="dark"] .links-section {
+            background: rgba(22, 163, 74, 0.15);
+            border-color: #15803d;
+        }
+        
+        .links-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .link-item {
+            background: var(--card-bg);
+            padding: 0.75rem;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-size: 0.85rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        
+        .link-item input {
+            padding: 0.5rem;
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            background: var(--input-bg);
+            color: var(--text-main);
+            cursor: pointer;
+        }
+        
+        .link-item input:focus {
+            outline: 2px solid var(--success);
+        }
+
+        /* Search Bar & Controls */
+        .controls-row {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+            flex: 1;
+            justify-content: flex-end;
+        }
+
+        .search-container {
+            position: relative;
+            max-width: 300px;
+            width: 100%;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 0.6rem 1rem 0.6rem 2.5rem;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-size: 0.95rem;
+            transition: all 0.2s;
+            background: var(--input-bg);
+            color: var(--text-main);
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 0.8rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+        }
+
+        /* Viewer Styles */
+        .view-section { display: none; }
+
+        .view-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        
+        .view-header h2 { font-size: 1.5rem; }
+
+        /* Grid Layout */
+        .grid-display {
+            display: grid;
+            gap: 1rem;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            opacity: 0;
+            animation: fadeIn 0.4s forwards;
+        }
+        
+        .director-grid {
+            grid-template-columns: repeat(6, 1fr) !important;
+        }
+
+        /* List View Mode */
+        .list-view {
+            display: flex !important;
+            flex-direction: column !important;
+            gap: 0.5rem !important;
+        }
+
+        .list-view .csv-button {
+            min-height: auto !important;
+            height: auto !important;
+            flex-direction: row !important;
+            justify-content: space-between !important;
+            padding: 0.75rem 1.5rem !important;
+            text-align: left !important;
+        }
+
+        .list-view .label-text {
+            font-size: 1rem;
+            margin-right: auto;
+            margin-bottom: 0 !important;
+        }
+
+        .list-view .csv-button small {
+            margin-left: 1rem;
+            margin-right: 1rem;
+        }
+
+        .list-view .action-btn {
+            position: static !important;
+            margin-left: 0.5rem;
+            width: 32px;
+            height: 32px;
+        }
+
+        /* Dynamic Buttons */
+        .csv-button {
+            position: relative;
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            padding: 1rem;
+            border-radius: 8px;
+            color: var(--text-main);
+            font-weight: 600;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 0.25rem;
+            height: auto;
+            min-height: 110px;
+            overflow: hidden;
+        }
+
+        .csv-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);
+            border-color: var(--primary);
+        }
+        
+        /* Visited/Clicked State */
+        .csv-button.visited {
+            opacity: 0.6;
+            border-color: var(--text-muted);
+            background: rgba(0,0,0,0.02);
+        }
+        [data-theme="dark"] .csv-button.visited {
+            background: rgba(255,255,255,0.05);
+        }
+
+        .csv-button.admin-btn { border-left: 4px solid var(--primary); }
+        .csv-button.streamer-btn { border-top: 4px solid #10b981; }
+
+        .label-text {
+            font-size: 1rem;
+            line-height: 1.2;
+            text-transform: uppercase;
+            z-index: 2;
+        }
+
+        .csv-button small {
+            font-weight: 400;
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            z-index: 2;
+        }
+
+        /* Action Buttons (QR) */
+        .action-btn {
+            position: absolute;
+            top: 0.5rem;
+            width: 28px;
+            height: 28px;
+            background: var(--action-btn-bg);
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: all 0.2s;
+            z-index: 10;
+            border: 1px solid var(--action-btn-border);
+            color: var(--text-muted);
+        }
+        
+        .qr-action { right: 0.5rem; }
+
+        .csv-button:hover .action-btn { opacity: 1; }
+        .action-btn:hover { background: var(--primary); color: white; border-color: var(--primary); }
+
+        /* Modal for QR & PIN */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.6);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            backdrop-filter: blur(4px);
+            animation: fadeIn 0.2s;
+        }
+
+        .modal-content {
+            background: var(--modal-bg);
+            padding: 2rem;
+            border-radius: 16px;
+            text-align: center;
+            max-width: 400px;
+            width: 90%;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3);
+            position: relative;
+            color: var(--text-main);
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--text-muted);
+        }
+
+        .qr-img {
+            max-width: 100%;
+            height: auto;
+            margin: 1rem 0;
+            border: 1px solid var(--border);
+            padding: 1rem;
+            border-radius: 8px;
+            background: white; /* QR needs white bg to be scannable */
+        }
+        
+        /* PIN Input */
+        .pin-input {
+            font-size: 2rem;
+            letter-spacing: 0.5rem;
+            text-align: center;
+            width: 200px;
+            margin: 1rem auto;
+            padding: 0.5rem;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            background: var(--input-bg);
+            color: var(--text-main);
+        }
+
+        /* Toast Notifications */
+        #toast-container {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            z-index: 2000;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .toast {
+            background: #1e293b;
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+            animation: slideIn 0.3s forwards;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            min-width: 250px;
+        }
+        
+        [data-theme="dark"] .toast {
+            background: #334155;
+            border: 1px solid #475569;
+        }
+
+        .toast.success { border-left: 4px solid var(--success); }
+
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+
+        /* Utilities */
+        .show { display: block; }
+        .flex { display: flex; }
+
+        @media (max-width: 1024px) {
+            .director-grid { grid-template-columns: repeat(3, 1fr) !important; }
+        }
+        
+        @media (max-width: 640px) {
+            .navbar { flex-direction: column; gap: 1rem; align-items: stretch; }
+            .nav-links { justify-content: center; }
+            .director-grid { grid-template-columns: repeat(2, 1fr) !important; }
+            .grid-display { grid-template-columns: repeat(2, 1fr); }
+            .controls-row { flex-direction: column; align-items: stretch; }
+            .search-container { max-width: 100%; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- NAVBAR - Managed by JS -->
+    <nav class="navbar" id="main-nav">
+        <div class="brand">
+            <span>🎥</span> Control Center
+        </div>
+        <div class="nav-links">
+            <button class="nav-btn" onclick="switchMainTab('admin')">Admin</button>
+            <button class="nav-btn" onclick="switchMainTab('director')">Director View</button>
+            <button class="nav-btn active" onclick="switchMainTab('csv1')">Language Pages</button>
+            <button id="theme-toggle" onclick="toggleTheme()" title="Switch Theme">🌙</button>
+        </div>
+    </nav>
+
+    <div class="container">
+        
+        <!-- ADMIN PANEL -->
+        <div id="tab-admin" class="view-section">
+            <div class="admin-panel show" style="display: block;">
+                <div class="view-header">
+                    <h2>Admin Dashboard</h2>
+                </div>
+
+                <!-- 1. SECURITY PIN -->
+                <div class="upload-group" style="border-color: var(--error); background: rgba(220, 38, 38, 0.08); margin-bottom:2rem; border-width: 2px;">
+                    <h3 style="color: var(--error); display:flex; align-items:center; justify-content:center; gap:0.5rem;">
+                        🔒 Security Settings
+                    </h3>
+                    <p class="upload-info">Change the access PIN for Admin/Director views (Default: 1234)</p>
+                    <div style="display:flex; gap:0.5rem; justify-content:center; align-items:center;">
+                        <input type="text" id="new-pin" maxlength="4" placeholder="New PIN" style="padding:0.6rem; border:1px solid var(--border); border-radius:4px; width:120px; text-align:center; background: var(--input-bg); color: var(--text-main); font-weight:bold; font-size:1.1rem;">
+                        <button class="nav-btn active" style="background: var(--error); border-color: var(--error); color: white;" onclick="changePin()">Update PIN</button>
+                    </div>
+                </div>
+
+                <!-- 2. UPLOAD DATA -->
+                <div class="upload-group">
+                    <h3>2. Upload Data (Optional)</h3>
+                    <p class="upload-info">The app is preloaded with the Master List. Uploading a file here will override it <b>for this session only</b>.</p>
+                    <input type="file" id="input-csv1" accept=".csv" onchange="handleFileUpload(this, 1)">
+                    <p id="status-csv1" style="margin-top: 0.5rem; color: var(--success); font-weight: 600;">Using Preloaded Master Data</p>
+                </div>
+
+                <div class="links-section">
+                    <h3>3. Shareable Links</h3>
+                    <p class="upload-info">Click any link below to copy it to your clipboard.</p>
+                    <div id="links-container" class="links-grid">
+                        <!-- Links generated via JS -->
+                    </div>
+                </div>
+
+                <div class="view-header" style="margin-top:3rem; border-top: 1px solid var(--border); padding-top:2rem;">
+                    <h2>Director Preview (6 Columns)</h2>
+                </div>
+                <div id="grid-admin" class="grid-display director-grid">
+                    <!-- Buttons injected here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- DIRECTOR VIEW -->
+        <div id="tab-director" class="view-section">
+            <div class="view-header" style="margin-top: 2rem;">
+                <div>
+                    <h2>Director View</h2>
+                    <span class="page-info" style="color:var(--text-muted)">Manage all seats</span>
+                </div>
+                
+                <div class="controls-row">
+                    <!-- List View Toggle -->
+                    <button class="nav-btn" id="view-toggle" onclick="toggleCompactMode()" title="Toggle List View">
+                        📜 List View
+                    </button>
+                    <!-- SEARCH BAR -->
+                    <div class="search-container">
+                        <span class="search-icon">🔍</span>
+                        <input type="text" class="search-input" placeholder="Search seats..." oninput="filterDirectorGrid(this.value)">
+                    </div>
+                </div>
+            </div>
+            <div id="grid-director" class="grid-display director-grid">
+                <!-- Content mirrors Admin Grid -->
+            </div>
+        </div>
+
+        <!-- LANGUAGE VIEW (Clean View - Navbar Hidden) -->
+        <div id="tab-csv1" class="view-section">
+            <!-- No Title/Header here, clean interface -->
+            <div id="lang-nav" class="sub-nav">
+                <!-- Generated dynamically -->
+            </div>
+            
+            <div id="grid-csv1" class="grid-display" style="margin-top: 1rem;">
+                <!-- Streamer Buttons injected here -->
+            </div>
+        </div>
+
+        <!-- CSV 2 VIEW (Hidden) -->
+        <div id="tab-csv2" class="view-section"></div>
+
+    </div>
+
+    <!-- TOAST CONTAINER -->
+    <div id="toast-container"></div>
+
+    <!-- QR CODE MODAL -->
+    <div id="qr-modal" class="modal-overlay" onclick="closeQRModal()">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <button class="modal-close" onclick="closeQRModal()">×</button>
+            <h3 id="qr-title" style="margin-bottom:0.5rem;">Scan to Join</h3>
+            <p id="qr-desc" style="color:var(--text-muted); font-size:0.9rem;">Point your phone camera here</p>
+            <img id="qr-image" class="qr-img" src="" alt="QR Code" />
+            <br>
+            <button class="nav-btn active" style="margin-top:1rem; width:100%; border:1px solid transparent" onclick="window.open(currentQRLink, '_blank')">Open Link Directly</button>
+        </div>
+    </div>
+
+    <!-- PIN MODAL -->
+    <div id="pin-modal" class="modal-overlay">
+        <div class="modal-content">
+            <h3 style="margin-bottom:1rem;">Restricted Access</h3>
+            <p style="color:var(--text-muted); margin-bottom:1.5rem;">Enter PIN to access Director/Admin Controls</p>
+            <input type="password" id="pin-input" class="pin-input" maxlength="4" placeholder="••••" onkeyup="checkPinInput(this)">
+            <p id="pin-error" style="color:var(--error); font-size:0.9rem; min-height:1.2em;"></p>
+            <button class="nav-btn" onclick="closePinModal()" style="margin-top:1rem;">Cancel</button>
+        </div>
+    </div>
+
+<script>
+    // ---------------------------------------------------------
+    // STATE MANAGEMENT
+    // ---------------------------------------------------------
+    const state = {
+        csv1: [], 
+        groupedPages: [], 
+        currentLangPageIndex: 0,
+        maxUploads: 4,
+        isCompactMode: false,
+        isAuthenticated: false,
+        pin: '1234' // Default PIN
+    };
+
+    let currentQRLink = "";
+    let pendingTab = "";
+
+    // ---------------------------------------------------------
+    // INITIALIZATION
+    // ---------------------------------------------------------
+   window.onload = async function() {
+    // Load Settings from LocalStorage (still OK for PIN & theme)
+    const savedPin = localStorage.getItem('csvApp_pin');
+    if (savedPin) state.pin = savedPin;
+
+    loadTheme();
+
+    // Try to load from Neon via Netlify function
+    await loadDataFromServerOrDefaults();
+
+    window.addEventListener('hashchange', handleHashNavigation);
+    handleHashNavigation();
+};
+
+async function loadDataFromServerOrDefaults() {
+    try {
+        const res = await fetch('/.netlify/functions/get-csv');
+        if (res.ok) {
+            const data = await res.json();
+            if (Array.isArray(data) && data.length > 0) {
+                console.log('Loaded data from server:', data.length);
+                processCSV1Data(data);
+                const statusEl = document.getElementById('status-csv1');
+                if (statusEl) {
+                    statusEl.textContent = `Loaded ${data.length} items from server.`;
+                }
+                return;
+            }
+        }
+        // If no data on server, fall back to defaults
+        console.log('No server data, using preloaded master data.');
+        const defaults = getPreloadedData();
+        processCSV1Data(defaults);
+    } catch (err) {
+        console.error('Failed to load from server; using defaults', err);
+        const defaults = getPreloadedData();
+        processCSV1Data(defaults);
+    }
+}
+
+    // ---------------------------------------------------------
+    // PRELOADED DATA (From CSV)
+    // ---------------------------------------------------------
+    function getPreloadedData() {
+        // Data extracted directly from the provided CSV file
+        const rawData = [
+            // ENGLISH
+            {group:"ENGLISH", seat:1, room:"English_Streamer_1", view:"2gRDpv9m2A"},
+            {group:"ENGLISH", seat:2, room:"English_Streamer_2", view:"M21x4rnm3b"},
+            {group:"ENGLISH", seat:3, room:"English_Streamer_3", view:"afCPqlHfVW"},
+            {group:"ENGLISH", seat:4, room:"English_Streamer_4", view:"J1HHXmMYwx"},
+            {group:"ENGLISH", seat:5, room:"English_Streamer_5", view:"03lFQoaoTn"},
+            {group:"ENGLISH", seat:6, room:"English_Streamer_6", view:"R1hS0eWc60"},
+            // MANDARIN
+            {group:"MANDARIN", seat:1, room:"Madarin_Streamer_1", view:"UZLioT9sWf"},
+            {group:"MANDARIN", seat:2, room:"Mandarin_Streamer_2", view:"LsPS30fiN2"},
+            {group:"MANDARIN", seat:3, room:"Mandarin_Streamer_3", view:"bHhhsh27yf"},
+            {group:"MANDARIN", seat:4, room:"Mandarin_Streamer_4", view:"BtgHnd95hW"},
+            {group:"MANDARIN", seat:5, room:"Mandarin_Streamer_5", view:"Z0fq5X4qKM"},
+            {group:"MANDARIN", seat:6, room:"Mandarin_Streamer_6", view:"rJc1HXbFNh"},
+            // CANTONESE
+            {group:"CANTONESE", seat:1, room:"Cantonese_Streamer_1", view:"jcfB30tgsA"},
+            {group:"CANTONESE", seat:2, room:"Cantonese_Streamer_2", view:"1tm5Ck59Qy"},
+            {group:"CANTONESE", seat:3, room:"Cantonese_Streamer_3", view:"IjBAgwewIh"},
+            {group:"CANTONESE", seat:4, room:"Cantonese_Streamer_4", view:"P8Cb7HWxTr"},
+            {group:"CANTONESE", seat:5, room:"Cantonese_Streamer_5", view:"ggwdwnLBI5"},
+            {group:"CANTONESE", seat:6, room:"Cantonese_Streamer_6", view:"zzizAZqzkU"},
+            // JAPANESE
+            {group:"JAPANESE", seat:1, room:"Japanese_Streamer_1", view:"qP0XeDEU6L"},
+            {group:"JAPANESE", seat:2, room:"Japanese_Streamer_2", view:"PD59AHp1AW"},
+            {group:"JAPANESE", seat:3, room:"Japanese_Streamer_3", view:"b1Qnjaw0Sz"},
+            {group:"JAPANESE", seat:4, room:"Japanese_Streamer_4", view:"oTA9ZXdnNA"},
+            {group:"JAPANESE", seat:5, room:"Japanese_Streamer_5", view:"k4d6qIC9wc"},
+            {group:"JAPANESE", seat:6, room:"Japanese_Streamer_6", view:"rLz9UBdz5A"},
+            // THAI
+            {group:"THAI", seat:1, room:"Thai_Streamer_1", view:"V1UYa4e8sR"},
+            {group:"THAI", seat:2, room:"Thai_Streamer_2", view:"tmCJQ4OD65"},
+            {group:"THAI", seat:3, room:"Thai_Streamer_3", view:"QmbZWcl9pn"},
+            {group:"THAI", seat:4, room:"Thai_Streamer_4", view:"gY2F9bGKC2"},
+            {group:"THAI", seat:5, room:"Thai_Streamer_5", view:"J7ii8O9Gp5"},
+            {group:"THAI", seat:6, room:"Thai_Streamer_6", view:"cQ3KSBPhA8"},
+            // VIETNAMESE
+            {group:"VIETNAMESE", seat:1, room:"Vietnamese_Streamer_1", view:"Dz6keze6pO"},
+            {group:"VIETNAMESE", seat:2, room:"Vietnamese_Streamer_2", view:"dhAFBk5aFp"},
+            {group:"VIETNAMESE", seat:3, room:"Vietnamese_Streamer_3", view:"hpNFDdLqzR"},
+            {group:"VIETNAMESE", seat:4, room:"Vietnamese_Streamer_4", view:"ySP2kMVz8q"},
+            {group:"VIETNAMESE", seat:5, room:"Vietnamese_Streamer_5", view:"O5x0OXi5gV"},
+            {group:"VIETNAMESE", seat:6, room:"Vietnamese_Streamer_6", view:"QhlJX1VXgJ"},
+            // KOREAN
+            {group:"KOREAN", seat:1, room:"Korean_Streamer_1", view:"XKVZRt5pNw"},
+            {group:"KOREAN", seat:2, room:"Korean_Streamer_2", view:"qwUnFkYxaG"},
+            {group:"KOREAN", seat:3, room:"Korean_Streamer_3", view:"Q8m6y0i5zS"},
+            {group:"KOREAN", seat:4, room:"Korean_Streamer_4", view:"adGqtGCtGm"},
+            {group:"KOREAN", seat:5, room:"Korean_Streamer_5", view:"fOLqpiNPbs"},
+            {group:"KOREAN", seat:6, room:"Korean_Streamer_6", view:"S2dKmrQO9f"}
+        ];
+
+        return rawData.map(item => ({
+            group: item.group,
+            seatNum: item.seat,
+            streamerLabel: `SEAT ${item.seat}`,
+            directorLabel: `${item.group.charAt(0) + item.group.slice(1).toLowerCase()} (${item.seat})`,
+            urlLabel: "",
+            viewLink: `https://vdo.ninja/?view=${item.view}&room=${item.room}&scene`,
+            guestLink: `https://vdo.ninja/?push=${item.view}&room=${item.room}&wc&l`,
+            directorLink: `https://vdo.ninja/?dir=${item.room}`
+        }));
+    }
+
+    // ---------------------------------------------------------
+    // THEME MANAGEMENT
+    // ---------------------------------------------------------
+    function toggleTheme() {
+        const html = document.documentElement;
+        const current = html.getAttribute('data-theme');
+        const next = current === 'dark' ? 'light' : 'dark';
+        html.setAttribute('data-theme', next);
+        localStorage.setItem('theme', next);
+        updateThemeIcon(next);
+    }
+
+    function loadTheme() {
+        const savedTheme = localStorage.getItem('theme') || 'light';
+        document.documentElement.setAttribute('data-theme', savedTheme);
+        updateThemeIcon(savedTheme);
+    }
+    
+    function updateThemeIcon(theme) {
+        const btn = document.getElementById('theme-toggle');
+        btn.textContent = theme === 'dark' ? '☀️' : '🌙';
+        btn.title = theme === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode';
+    }
+
+    // ---------------------------------------------------------
+    // COMPACT MODE
+    // ---------------------------------------------------------
+    function toggleCompactMode() {
+        state.isCompactMode = !state.isCompactMode;
+        const grid = document.getElementById('grid-director');
+        const btn = document.getElementById('view-toggle');
+        
+        if (state.isCompactMode) {
+            grid.classList.add('list-view');
+            grid.classList.remove('director-grid'); // Remove grid columns constraint
+            btn.textContent = '🔳 Grid View';
+        } else {
+            grid.classList.remove('list-view');
+            grid.classList.add('director-grid');
+            btn.textContent = '📜 List View';
+        }
+    }
+
+    // ---------------------------------------------------------
+    // PIN PROTECTION & CHANGE
+    // ---------------------------------------------------------
+    function checkPin(tabId) {
+        if (state.isAuthenticated) {
+            performSwitch(tabId);
+        } else {
+            pendingTab = tabId;
+            document.getElementById('pin-modal').style.display = 'flex';
+            document.getElementById('pin-input').value = '';
+            document.getElementById('pin-input').focus();
+        }
+    }
+
+    function checkPinInput(input) {
+        const pin = input.value;
+        const errorEl = document.getElementById('pin-error');
+        errorEl.textContent = '';
+
+        if (pin.length === 4) {
+            if (pin === state.pin) { 
+                state.isAuthenticated = true;
+                document.getElementById('pin-modal').style.display = 'none';
+                performSwitch(pendingTab);
+                showToast("Access Granted", "success");
+            } else {
+                errorEl.textContent = 'Incorrect PIN';
+                input.value = '';
+                input.classList.add('shake');
+            }
+        }
+    }
+
+    function changePin() {
+        const input = document.getElementById('new-pin');
+        const newPin = input.value;
+        if (newPin.length === 4 && !isNaN(newPin)) {
+            state.pin = newPin;
+            localStorage.setItem('csvApp_pin', newPin);
+            showToast(`PIN updated to ${newPin}`, 'success');
+            input.value = '';
+        } else {
+            showToast('PIN must be 4 numeric digits', 'error');
+        }
+    }
+
+    function closePinModal() {
+        document.getElementById('pin-modal').style.display = 'none';
+        
+        // Safety Fallback:
+        if (pendingTab === 'admin' && !state.isAuthenticated) {
+            switchMainTab('csv1', false);
+        }
+        pendingTab = "";
+    }
+
+    // ---------------------------------------------------------
+    // ROUTING / DEEP LINKING
+    // ---------------------------------------------------------
+    function handleHashNavigation() {
+        const hash = window.location.hash;
+        
+        if (hash === '#admin') {
+            switchMainTab('admin', false);
+        } else if (hash === '#director') {
+            switchMainTab('director', false);
+        } else if (hash.startsWith('#lang=')) {
+            const langName = decodeURIComponent(hash.split('=')[1]);
+            switchMainTab('csv1', false);
+            const index = state.groupedPages.findIndex(page => page[0] && page[0].group === langName);
+            if (index !== -1) switchLanguagePage(index, false);
+        } else {
+            // DEFAULT BEHAVIOR: Load Admin Page (Home)
+            // This will trigger checkPin() since Admin is protected.
+            switchMainTab('admin', false);
+        }
+    }
+
+    // ---------------------------------------------------------
+    // DATA PROCESSING
+    // ---------------------------------------------------------
+    function processCSV1Data(data) {
+        state.csv1 = data;
+        const pages = [];
+        let currentPage = [];
+        let currentGroup = "";
+
+        data.forEach((item) => {
+            if (currentPage.length === 6 || (currentPage.length > 0 && item.group !== currentGroup)) {
+                pages.push(currentPage);
+                currentPage = [];
+            }
+            currentGroup = item.group;
+            currentPage.push(item);
+        });
+        if (currentPage.length > 0) pages.push(currentPage);
+
+        state.groupedPages = pages;
+        state.currentLangPageIndex = 0;
+
+        renderAdminView();
+        renderDirectorView(); // Initial render
+        renderLanguageNav();
+        renderLanguagePage();
+        generateLinks();
+    }
+
+    // ---------------------------------------------------------
+    // SEARCH FUNCTIONALITY
+    // ---------------------------------------------------------
+    function filterDirectorGrid(query) {
+        const container = document.getElementById('grid-director');
+        container.innerHTML = ''; // Clear current
+
+        const lowerQuery = query.toLowerCase();
+        
+        // Filter data
+        const filtered = state.csv1.filter(item => {
+            const label = (item.directorLabel || '').toLowerCase();
+            const group = (item.group || '').toLowerCase();
+            const seat = (item.seatNum || '').toString();
+            return label.includes(lowerQuery) || group.includes(lowerQuery) || seat.includes(lowerQuery);
+        });
+
+        if(filtered.length === 0) {
+            container.innerHTML = '<div style="grid-column: 1/-1; text-align:center; padding:2rem; color:var(--text-muted)">No seats found matching your search.</div>';
+            return;
+        }
+
+        filtered.forEach(item => container.appendChild(createDirectorButton(item)));
+    }
+
+    // ---------------------------------------------------------
+    // RENDERING
+    // ---------------------------------------------------------
+    
+    function renderAdminView() {
+        const container = document.getElementById('grid-admin');
+        container.innerHTML = '';
+        state.csv1.forEach(item => container.appendChild(createDirectorButton(item)));
+    }
+
+    function renderDirectorView() {
+        // Just call the filter with empty string to render all
+        filterDirectorGrid("");
+    }
+
+    function createDirectorButton(item) {
+        const btn = document.createElement('div');
+        btn.className = 'csv-button admin-btn';
+        
+        const label = item.directorLabel || `${item.group} (${item.seatNum})`;
+        const link = item.directorLink;
+        
+        // Main Click Action
+        btn.onclick = (e) => {
+            if(e.target.closest('.action-btn')) return; // Ignore if clicking icons
+            if (link) {
+                window.open(link, '_blank');
+                btn.classList.add('visited'); // DIMMING FEATURE
+            } else {
+                showToast('No Director Link found', 'error');
+            }
+        };
+        
+        // QR Code Icon
+        const qrIcon = document.createElement('div');
+        qrIcon.className = 'action-btn qr-action';
+        qrIcon.innerHTML = '📱';
+        qrIcon.title = 'Show QR Code';
+        qrIcon.onclick = (e) => {
+            e.stopPropagation();
+            openQRModal(label, link);
+        };
+
+        btn.innerHTML = `
+            <div class="label-text">${label}</div>
+            <small>Director Access</small>
+        `;
+        btn.appendChild(qrIcon);
+        return btn;
+    }
+
+    function renderLanguageNav() {
+        const navContainer = document.getElementById('lang-nav');
+        navContainer.innerHTML = '';
+        state.groupedPages.forEach((page, index) => {
+            const groupName = page[0] ? page[0].group : `Page ${index + 1}`;
+            const btn = document.createElement('button');
+            btn.className = `sub-nav-btn ${index === state.currentLangPageIndex ? 'active' : ''}`;
+            btn.textContent = `${groupName}`;
+            btn.onclick = () => switchLanguagePage(index);
+            navContainer.appendChild(btn);
+        });
+    }
+
+    function renderLanguagePage() {
+        const container = document.getElementById('grid-csv1');
+        container.innerHTML = '';
+        
+        const pageIndex = state.currentLangPageIndex;
+        const pageData = state.groupedPages[pageIndex];
+
+        if (!pageData || pageData.length === 0) {
+            container.innerHTML = '<p>No data.</p>';
+            return;
+        }
+
+        pageData.forEach(item => {
+            const btn = document.createElement('div');
+            btn.className = 'csv-button streamer-btn';
+            
+            const link = item.guestLink;
+            const mainLabel = item.streamerLabel || `SEAT ${item.seatNum}`;
+
+            btn.onclick = (e) => {
+                if(e.target.closest('.action-btn')) return;
+                if (link) {
+                    window.open(link, '_blank');
+                    btn.classList.add('visited'); // DIMMING FEATURE
+                } else {
+                    showToast("No Guest Link found", 'error');
+                }
+            };
+            
+            // QR Code Icon
+            const qrIcon = document.createElement('div');
+            qrIcon.className = 'action-btn qr-action';
+            qrIcon.innerHTML = '📱';
+            qrIcon.title = 'Scan to Join';
+            qrIcon.onclick = (e) => {
+                e.stopPropagation();
+                openQRModal(mainLabel, link);
+            };
+
+            btn.innerHTML = `
+                <div class="label-text">${mainLabel}</div>
+            `;
+            btn.appendChild(qrIcon);
+            container.appendChild(btn);
+        });
+        
+        document.querySelectorAll('.sub-nav-btn').forEach((btn, idx) => {
+            if (idx === pageIndex) btn.classList.add('active');
+            else btn.classList.remove('active');
+        });
+    }
+
+    function generateLinks() {
+        const container = document.getElementById('links-container');
+        container.innerHTML = '';
+        const baseUrl = window.location.href.split('#')[0];
+        const links = [
+            { name: "1. Admin Dashboard", hash: "#admin" },
+            { name: "2. Director View", hash: "#director" }
+        ];
+
+        state.groupedPages.forEach((page, i) => {
+            if(page[0]) {
+                links.push({ name: `${3+i}. ${page[0].group} Page`, hash: `#lang=${encodeURIComponent(page[0].group)}` });
+            }
+        });
+
+        links.forEach(link => {
+            const div = document.createElement('div');
+            div.className = 'link-item';
+            const fullUrl = baseUrl + link.hash;
+            div.innerHTML = `
+                <div class="flex" style="justify-content:space-between">
+                    <strong>${link.name}</strong>
+                    <span style="font-size:0.75rem; color:var(--primary); cursor:pointer">📋 Copy</span>
+                </div>
+                <input type="text" readonly value="${fullUrl}" />
+            `;
+            div.onclick = () => {
+                const input = div.querySelector('input');
+                input.select();
+                document.execCommand('copy');
+                showToast("Link copied to clipboard!", "success");
+            };
+            container.appendChild(div);
+        });
+    }
+
+    // ---------------------------------------------------------
+    // UTILITIES (Toasts & Modals)
+    // ---------------------------------------------------------
+    function showToast(msg, type='normal') {
+        const container = document.getElementById('toast-container');
+        const toast = document.createElement('div');
+        toast.className = `toast ${type === 'success' ? 'success' : ''}`;
+        toast.textContent = msg;
+        container.appendChild(toast);
+        setTimeout(() => {
+            toast.style.opacity = '0';
+            setTimeout(() => toast.remove(), 300);
+        }, 3000);
+    }
+
+    function openQRModal(label, link) {
+        if(!link) {
+            showToast("No link available to generate QR code", "error");
+            return;
+        }
+        currentQRLink = link;
+        document.getElementById('qr-modal').style.display = 'flex';
+        document.getElementById('qr-title').textContent = label;
+        // Use a reliable QR code API
+        document.getElementById('qr-image').src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(link)}`;
+    }
+
+    function closeQRModal() {
+        document.getElementById('qr-modal').style.display = 'none';
+    }
+
+    // ---------------------------------------------------------
+    // NAVIGATION
+    // ---------------------------------------------------------
+    function switchMainTab(tabId, updateHash = true) {
+        // PIN PROTECTION logic for Admin and Director
+        if (tabId === 'admin' || tabId === 'director') {
+            if (!state.isAuthenticated) {
+                checkPin(tabId); // This will call performSwitch if successful
+                return;
+            }
+        }
+        performSwitch(tabId, updateHash);
+    }
+
+    function performSwitch(tabId, updateHash = true) {
+        document.querySelectorAll('.view-section').forEach(el => el.classList.remove('show'));
+        document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
+        document.getElementById(`tab-${tabId}`).classList.add('show');
+        
+        const navBtns = document.querySelectorAll('.nav-links .nav-btn');
+        if(tabId === 'admin') navBtns[0].classList.add('active');
+        if(tabId === 'director') navBtns[1].classList.add('active');
+        if(tabId === 'csv1') navBtns[2].classList.add('active');
+
+        // AUTO-HIDE NAVBAR ON LANGUAGE PAGES
+        const navbar = document.getElementById('main-nav');
+        if (tabId === 'csv1') {
+            navbar.style.display = 'none';
+        } else {
+            navbar.style.display = 'flex';
+        }
+
+        if (updateHash) {
+            if (tabId === 'admin') window.location.hash = 'admin';
+            if (tabId === 'director') window.location.hash = 'director';
+            if (tabId === 'csv1') {
+                const currentPage = state.groupedPages[state.currentLangPageIndex];
+                if (currentPage && currentPage[0]) window.location.hash = `lang=${encodeURIComponent(currentPage[0].group)}`;
+            }
+        }
+    }
+
+    function switchLanguagePage(index, updateHash = true) {
+        state.currentLangPageIndex = index;
+        renderLanguagePage();
+        if (updateHash) {
+            const pageData = state.groupedPages[index];
+            if (pageData && pageData[0]) window.location.hash = `lang=${encodeURIComponent(pageData[0].group)}`;
+        }
+    }
+
+    // ---------------------------------------------------------
+    // CSV PARSING (For Local Overrides)
+    // ---------------------------------------------------------
+    function handleFileUpload(input) {
+    const file = input.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = async function(e) {
+        const csvText = e.target.result;
+
+        // Parse in browser for immediate use
+        const parsed = parseCSV(csvText);
+        processCSV1Data(parsed);
+
+        // Update status text
+        const statusEl = document.getElementById('status-csv1');
+        if (statusEl) {
+            statusEl.textContent = `Loaded user file (${parsed.length} items). Uploading to server...`;
+        }
+
+        // OPTIONAL: remove old localStorage saving, since we now store online
+        // try { localStorage.setItem('csvApp_csv1', JSON.stringify(parsed)); } catch(e) {}
+
+        // Send parsed data to Netlify function -> Neon DB
+        try {
+            const resp = await fetch('/.netlify/functions/upload-csv', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ items: parsed })
+            });
+
+            if (!resp.ok) {
+                const text = await resp.text();
+                throw new Error(text || ('HTTP ' + resp.status));
+            }
+
+            const result = await resp.json();
+            console.log('Server save result:', result);
+
+            if (statusEl) {
+                statusEl.textContent = `Uploaded to server (${parsed.length} items).`;
+            }
+            showToast(`Uploaded ${parsed.length} items to server.`, 'success');
+        } catch (err) {
+            console.error('Upload to server failed:', err);
+            if (statusEl) {
+                statusEl.textContent = `Loaded user file (${parsed.length} items). Server upload failed.`;
+            }
+            showToast('Saved for this session, but upload to server failed.', 'error');
+        }
+    };
+
+    reader.readAsText(file);
+}
+
+    function parseCSV(csvText) {
+        const lines = csvText.trim().split('\n');
+        const result = [];
+        let currentGroup = "General";
+        let seatCounter = 1;
+
+        for (let i = 0; i < lines.length; i++) {
+            const line = lines[i].trim();
+            if (!line) continue;
+            const parts = line.split(',');
+            
+            // Col 0: Group
+            // Col 1: Browser Source Link (Used for View)
+            // Col 2: Streamer Label
+            // Col 4: Guest Link
+            // Col 5: Director Link
+            // Col 6: Director Label
+            
+            const col0 = parts[0] ? parts[0].trim() : '';
+            const viewLink = parts[1] ? parts[1].trim() : ''; // NEW: View Link
+            const streamerLabel = parts[2] ? parts[2].trim() : '';
+            const guestLink = parts[4] ? parts[4].trim() : '';
+            const directorLink = parts[5] ? parts[5].trim() : '';
+            const directorLabel = parts[6] ? parts[6].trim() : '';
+
+            const hasLink = (guestLink.includes('http') || directorLink.includes('http'));
+
+            if (col0.length > 0) {
+                if (col0 !== currentGroup) {
+                    currentGroup = col0;
+                    seatCounter = 1; 
+                }
+            }
+
+            if (!hasLink) continue;
+
+            let urlLabel = "";
+            if(guestLink) {
+                const match = guestLink.match(/[?&](label|room)=([^&]+)/);
+                if(match) urlLabel = decodeURIComponent(match[2]);
+            }
+
+            result.push({
+                group: currentGroup,
+                seatNum: seatCounter,
+                streamerLabel: streamerLabel, 
+                directorLabel: directorLabel, 
+                urlLabel: urlLabel,
+                viewLink: viewLink, // Store it
+                guestLink: guestLink,
+                directorLink: directorLink
+            });
+            seatCounter++;
+        }
+        return result;
+    }
+</script>
+</body>
+</html>
